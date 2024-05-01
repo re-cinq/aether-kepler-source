@@ -65,7 +65,7 @@ jobs:
         with:
           go-version-file: go.mod
       - name: build
-        run: GOOS=linux GOARCH=amd64 go build -o .plugin/kepler cmd/kepler.go
+        run: GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o .plugin/kepler cmd/kepler.go
       - name: release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')

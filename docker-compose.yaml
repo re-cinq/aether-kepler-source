@@ -1,0 +1,23 @@
+version: '3.1'
+
+services:
+  aether:
+    # If running with a local prometheus and grafana, use host network mode
+    # to access localhost from the container
+    network_mode: "host"
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - 8080:8080
+    env_file:
+      - .env
+    volumes:
+      - .plugins/:/plugins
+      - ./:/src
+      # Depending on the cloud provider, you may need to mount the credentials file for aether
+      # Volume for Google Cloud Credentials
+      - ~/.config/gcloud/application_default_credentials.json:/credentials/application_default_credentials.json
+      # volume for AWS credentials
+      - ~/.aws/credentials:/credentials/credentials
+

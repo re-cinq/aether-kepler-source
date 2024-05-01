@@ -1,0 +1,17 @@
+FROM recinq/aether:0.0.1-alpha.8 as aether
+
+FROM golang:1.22
+
+WORKDIR /src
+
+RUN go install github.com/cosmtrek/air@latest
+
+COPY go.mod go.sum ./
+
+RUN go mod download
+
+COPY . .
+
+COPY --from=aether /aether /cmd/aether
+
+CMD ["air", "-c", ".air.toml"]
