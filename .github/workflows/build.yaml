@@ -1,0 +1,73 @@
+name: build
+# Cancel concurrent jobs for the same ref
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+# Running CI on push to main and open PRs
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+  pull_request:
+
+jobs:
+  golangci:
+      name: lint
+      runs-on: ubuntu-latest
+      timeout-minutes: 5
+      steps:
+        # Checkout the code
+        - uses: actions/checkout@v4
+        
+        # setup Golang based on the go.mod version
+        - uses: actions/setup-go@v4
+          with:
+            go-version-file: go.mod
+        
+        # run go ci lint to catch standard go issues
+        - name: golangci-lint
+          uses: golangci/golangci-lint-action@v3
+          with:          
+            args: --issues-exit-code=0
+            skip-pkg-cache: true
+            skip-build-cache: true
+            version: latest
+        
+        # Make sure the go mod is tidy
+        - run: go mod tidy && git diff --exit-code
+  
+  test:
+      name: test
+      runs-on: ubuntu-latest
+      timeout-minutes: 5
+      steps:
+        
+        # Checkout the code
+        - uses: actions/checkout@v4
+
+        # Setup Golang based on the go.mod version
+        - uses: actions/setup-go@v4
+          with:
+            go-version-file: go.mod
+        
+        # Run the tests
+        - run: go test ./... -v
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        # Setup Golang based on the go.mod version
+      - uses: actions/setup-go@v4
+        with:
+          go-version-file: go.mod
+      - name: build
+        run: GOOS=linux GOARCH=amd64 go build -o .plugin/kepler cmd/kepler.go
+      - name: release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: .plugin/kepler
