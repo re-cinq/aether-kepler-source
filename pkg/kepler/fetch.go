@@ -107,7 +107,8 @@ func (k *KeplerSource) cpuMetrics(ctx context.Context, query string) error {
 		if !exists {
 			region, err = getRegionFromInstance(labels["instance"])
 			if err != nil {
-				return err
+				k.logger.Error("kepler source: error getting region from instance", "error", err)
+				continue
 			}
 		}
 
@@ -186,7 +187,8 @@ func (k *KeplerSource) memMetrics(ctx context.Context, query string) error {
 		if !exists {
 			region, err = getRegionFromInstance(labels["instance"])
 			if err != nil {
-				return err
+				k.logger.Error("kepler source: error getting region from instance", "error", err)
+				continue
 			}
 		}
 
