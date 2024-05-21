@@ -27,8 +27,10 @@ func main() {
 		os.Exit(1)
 	}
 
+	address := fmt.Sprintf("%v:%v", cfg.PrometheusURL, cfg.PrometheusPort)
+	logger.Info("prometheus address", "address", address)
 	client, err := api.NewClient(api.Config{
-		Address: fmt.Sprintf("%v:%v", cfg.PrometheusURL, cfg.PrometheusPort),
+		Address: address,
 		// TODO: setup authentication
 		RoundTripper: apiconfig.NewBasicAuthRoundTripper("admin", "", "", "", api.DefaultRoundTripper),
 	})
