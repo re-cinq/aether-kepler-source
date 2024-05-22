@@ -1,8 +1,11 @@
 # aether-kelper-source
 The plugin is designed as a source plugin for the aether project. It fetches data from the kepler API and sends it to the aether project via gRPC calls and the go-plugin framework.
 
+### Installation
+To install the plugin with aether in cluster environments follow the [installation guide][1].
+
 ### Configuration
-To configure the Kepler plugin, an `.env` file is required to be present in the root directory. The `.env` file should contain the following variables:
+The following environment variables are required to to run the plugin:
 
 ```
 INTERVAL=<interval>
@@ -19,10 +22,9 @@ PROMETHEUS_PORT=<prometheus_port>
 
 `<prometheus_url>` is the URL of the prometheus server that the plugin scrapes kepler metrics from.
 
+
 `<prometheus_port>` is the port of the prometheus server that the plugin scrapes kepler metrics from. This is an optional field and defaults to `9090`.
 
-### Deployment
-TODO
 
 ### Running locally with aether
 
@@ -44,8 +46,13 @@ __NOTE__ If you want to run the plugin stand-alone, although not it's design, yo
 plugins:
   SourceDir: .plugins/
 ```
+3. An `.env` file is required to be present in the root directory of the project.
+This file should contain the environment variables specified in the configuration section above.
 
-3. Run aether using docker-compose:
+```
+4. Run aether using docker-compose:
 ```
 docker compose up
 ```
+
+[1]: https://aether.green/docs/tutorials/kepler/
