@@ -87,16 +87,13 @@ func (k *KeplerSource) cpuMetrics(ctx context.Context, query string) error {
 		m.Energy = float64(sample.Value)
 		m.Labels = labels
 
-		// Since we are gathering container information, and multiple pods can have
-		// the same container name, to keep them unique we are using pod_name/container_name as
-		// the instanceMap key.
-		pod := labels["pod_name"]
-		container := labels["container_name"]
-		name := fmt.Sprintf("%s/%s", pod, container)
+		// since container_id is unique, we can use it as the instanceMap key
+		// and ID for the instance
+		id := labels["container_id"]
 
 		// if the instance already exists in the instancesMap
 		// upsert the metric and continue looping
-		if instance, exists := k.instancesMap[name]; exists {
+		if instance, exists := k.instancesMap[id]; exists {
 			instance.Metrics.Upsert(m)
 			continue
 		}
@@ -107,7 +104,8 @@ func (k *KeplerSource) cpuMetrics(ctx context.Context, query string) error {
 		if !exists {
 			region, err = getRegionFromInstance(labels["instance"])
 			if err != nil {
-				return err
+				k.logger.Error("kepler source: error getting region from instance", "error", err)
+				continue
 			}
 		}
 
@@ -117,15 +115,17 @@ func (k *KeplerSource) cpuMetrics(ctx context.Context, query string) error {
 		}
 
 		instance := &v1.Instance{
+			ID:       id,
 			Provider: p,
 			Service:  "kepler",
-			Name:     name,
+			Name:     labels["container_name"],
 			Region:   region,
+			Status:   "running",
 			Labels:   labels,
 		}
 
 		instance.Metrics.Upsert(m)
-		k.instancesMap[name] = instance
+		k.instancesMap[id] = instance
 	}
 
 	return nil
@@ -166,16 +166,13 @@ func (k *KeplerSource) memMetrics(ctx context.Context, query string) error {
 		m.Energy = float64(sample.Value)
 		m.Labels = labels
 
-		// Since we are gathering container information, and multiple pods can have
-		// the same container name, to keep them unique we are using pod_name/container_name as
-		// the instanceMap key.
-		pod := labels["pod_name"]
-		container := labels["container_name"]
-		name := fmt.Sprintf("%s/%s", pod, container)
+		// since container_id is unique, we can use it as the instanceMap key
+		// and ID for the instance
+		id := labels["container_id"]
 
 		// if the instance already exists in the instancesMap
 		// upsert the metric and continue looping
-		if instance, exists := k.instancesMap[name]; exists {
+		if instance, exists := k.instancesMap[id]; exists {
 			instance.Metrics.Upsert(m)
 			continue
 		}
@@ -186,7 +183,8 @@ func (k *KeplerSource) memMetrics(ctx context.Context, query string) error {
 		if !exists {
 			region, err = getRegionFromInstance(labels["instance"])
 			if err != nil {
-				return err
+				k.logger.Error("kepler source: error getting region from instance", "error", err)
+				continue
 			}
 		}
 
@@ -196,15 +194,17 @@ func (k *KeplerSource) memMetrics(ctx context.Context, query string) error {
 		}
 
 		instance := &v1.Instance{
+			ID:       id,
 			Provider: p,
 			Service:  "kepler",
-			Name:     name,
+			Name:     labels["container_name"],
+			Status:   "running",
 			Region:   region,
 			Labels:   labels,
 		}
 
 		instance.Metrics.Upsert(m)
-		k.instancesMap[name] = instance
+		k.instancesMap[id] = instance
 	}
 
 	return nil
@@ -218,7 +218,7 @@ func (k *KeplerSource) memMetrics(ctx context.Context, query string) error {
 func getRegionFromInstance(s string) (string, error) {
 	if strings.HasPrefix(s, "gke-") {
 		// The regex is looking for the region in the instance name
-		re := regexp.MustCompile("(europe|asia|australia|southamerica|me|africa|us)-[a-z]*[0-9]*")
+		re := regexp.MustCompile("(europe|asia|australia|southamerica|me|africa|us)-[a-z]+[0-9]+")
 		match := re.FindString(s)
 		if match == "" {
 			return "", fmt.Errorf("unable to get region from instance: %s", s)
