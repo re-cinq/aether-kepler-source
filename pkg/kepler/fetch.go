@@ -220,7 +220,7 @@ func (k *KeplerSource) memMetrics(ctx context.Context, query string) error {
 func getRegionFromInstance(s string) (string, error) {
 	if strings.HasPrefix(s, "gke-") {
 		// The regex is looking for the region in the instance name
-		re := regexp.MustCompile("(europe|asia|australia|southamerica|me|africa|us)-[a-z]*[0-9]*")
+		re := regexp.MustCompile("(europe|asia|australia|southamerica|me|africa|us)-[a-z]+[0-9]+")
 		match := re.FindString(s)
 		if match == "" {
 			return "", fmt.Errorf("unable to get region from instance: %s", s)

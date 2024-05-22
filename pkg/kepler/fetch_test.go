@@ -49,6 +49,15 @@ func TestGetRegionFromInstance(t *testing.T) {
 				expErr:   "invalid instance",
 			}
 		}(),
+		func() *testcase {
+			return &testcase{
+				name:     "invalid gcp instance missing zone",
+				instance: "gke-gc0-apps-europe-west-medium-nodes-f09525f4-uokn",
+				region:   "",
+				hasErr:   true,
+				expErr:   "invalid gcp instance",
+			}
+		}(),
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			actualRegion, err := getRegionFromInstance(test.instance)
