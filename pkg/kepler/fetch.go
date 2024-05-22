@@ -120,7 +120,7 @@ func (k *KeplerSource) cpuMetrics(ctx context.Context, query string) error {
 			Service:  "kepler",
 			Name:     labels["container_name"],
 			Region:   region,
-			Status:   "running",
+			Status:   v1.InstanceRunning,
 			Labels:   labels,
 		}
 
@@ -198,7 +198,7 @@ func (k *KeplerSource) memMetrics(ctx context.Context, query string) error {
 			Provider: p,
 			Service:  "kepler",
 			Name:     labels["container_name"],
-			Status:   "running",
+			Status:   v1.InstanceRunning,
 			Region:   region,
 			Labels:   labels,
 		}
