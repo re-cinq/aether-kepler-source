@@ -3,13 +3,14 @@ package main
 import (
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
+	"time"
 	"v1/pkg/config"
 	"v1/pkg/kepler"
 
 	"github.com/hashicorp/go-plugin"
 	"github.com/prometheus/client_golang/api"
-	apiconfig "github.com/prometheus/common/config"
 
 	aetherplugin "github.com/re-cinq/aether/pkg/plugin"
 )
@@ -31,8 +32,9 @@ func main() {
 	logger.Info("prometheus address", "address", address)
 	client, err := api.NewClient(api.Config{
 		Address: address,
-		// TODO: setup authentication
-		RoundTripper: apiconfig.NewBasicAuthRoundTripper("admin", "", "", "", api.DefaultRoundTripper),
+		Client: &http.Client{
+			Timeout: 10 * time.Second,
+		},
 	})
 	if err != nil {
 		logger.Error("unable to setup prometheus client", "error", err)
