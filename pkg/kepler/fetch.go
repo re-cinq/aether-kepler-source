@@ -46,6 +46,7 @@ func (k *KeplerSource) Fetch(ctx context.Context) ([]*v1.Instance, error) {
 		instances = append(instances, i)
 	}
 
+	k.logger.Debug("kepler source: fetched instances", "instance Count", len(instances))
 	return instances, nil
 }
 
@@ -78,7 +79,10 @@ func (k *KeplerSource) cpuMetrics(ctx context.Context, query string) error {
 			labels[string(k)] = string(v)
 		}
 
-		k.logger.Debug("Kepler energy consumption", "instance", labels["instance"], "energy", sample.Value)
+		if sample.Value == 0 {
+			k.logger.Debug("kepler source: CPU energy consumption is 0", "containerID", labels["container_id"], "container", labels["container_name"])
+			continue
+		}
 
 		// Create the CPU metric with the energy consumtion
 		// collected from the query
@@ -90,6 +94,9 @@ func (k *KeplerSource) cpuMetrics(ctx context.Context, query string) error {
 		// since container_id is unique, we can use it as the instanceMap key
 		// and ID for the instance
 		id := labels["container_id"]
+		name := labels["container_name"]
+
+		k.logger.Debug("kepler source: CPU energy consumption", "containerID", id, "container", name, "energy", m.Energy)
 
 		// if the instance already exists in the instancesMap
 		// upsert the metric and continue looping
@@ -118,7 +125,7 @@ func (k *KeplerSource) cpuMetrics(ctx context.Context, query string) error {
 			ID:       id,
 			Provider: p,
 			Service:  "kepler",
-			Name:     labels["container_name"],
+			Name:     name,
 			Region:   region,
 			Status:   v1.InstanceRunning,
 			Labels:   labels,
@@ -159,6 +166,11 @@ func (k *KeplerSource) memMetrics(ctx context.Context, query string) error {
 			labels[string(k)] = string(v)
 		}
 
+		if sample.Value == 0 {
+			k.logger.Debug("kepler source: memory energy consumption is 0", "containerID", labels["container_id"], "container", labels["container_name"])
+			continue
+		}
+
 		// Create the memory metric with the energy consumtion
 		// collected from the query
 		m := v1.NewMetric(v1.Memory.String())
@@ -169,6 +181,9 @@ func (k *KeplerSource) memMetrics(ctx context.Context, query string) error {
 		// since container_id is unique, we can use it as the instanceMap key
 		// and ID for the instance
 		id := labels["container_id"]
+		name := labels["container_name"]
+
+		k.logger.Debug("kepler source: memory energy consumption", "containerID", id, "container", name, "energy", m.Energy)
 
 		// if the instance already exists in the instancesMap
 		// upsert the metric and continue looping
@@ -197,7 +212,7 @@ func (k *KeplerSource) memMetrics(ctx context.Context, query string) error {
 			ID:       id,
 			Provider: p,
 			Service:  "kepler",
-			Name:     labels["container_name"],
+			Name:     name,
 			Status:   v1.InstanceRunning,
 			Region:   region,
 			Labels:   labels,
