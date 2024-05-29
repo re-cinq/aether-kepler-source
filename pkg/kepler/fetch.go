@@ -84,11 +84,17 @@ func (k *KeplerSource) cpuMetrics(ctx context.Context, query string) error {
 			continue
 		}
 
+		// Convert the Joules energy consumption collected from kepler
+		// into KwH
+		// 1 Joule = 1 Watt second, so divide Joules by the interval of time in seconds
+		// and divide by 3600 to get watt hours, and divide by 1000 to get kilowatt hours.
+		ekWh := float64(sample.Value) / k.cfg.Interval.Seconds() / 3600 / 1000
+
 		// Create the CPU metric with the energy consumtion
 		// collected from the query
 		m := v1.NewMetric(v1.CPU.String())
 		m.ResourceType = v1.CPU
-		m.Energy = float64(sample.Value)
+		m.Energy = ekWh
 		m.Labels = labels
 
 		// since container_id is unique, we can use it as the instanceMap key
@@ -96,7 +102,7 @@ func (k *KeplerSource) cpuMetrics(ctx context.Context, query string) error {
 		id := labels["container_id"]
 		name := labels["container_name"]
 
-		k.logger.Debug("kepler source: CPU energy consumption", "containerID", id, "container", name, "energy", m.Energy)
+		k.logger.Debug("kepler source: CPU energy consumption kWh", "containerID", id, "container", name, "energy", m.Energy)
 
 		// if the instance already exists in the instancesMap
 		// upsert the metric and continue looping
@@ -171,11 +177,17 @@ func (k *KeplerSource) memMetrics(ctx context.Context, query string) error {
 			continue
 		}
 
+		// Convert the Joules energy consumption collected from kepler
+		// into KwH
+		// 1 Joule = 1 Watt second, so divide Joules by the interval of time in seconds
+		// and divide by 3600 to get watt hours, and divide by 1000 to get kilowatt hours.
+		ekWh := float64(sample.Value) / k.cfg.Interval.Seconds() / 3600 / 1000
+
 		// Create the memory metric with the energy consumtion
 		// collected from the query
 		m := v1.NewMetric(v1.Memory.String())
 		m.ResourceType = v1.Memory
-		m.Energy = float64(sample.Value)
+		m.Energy = ekWh
 		m.Labels = labels
 
 		// since container_id is unique, we can use it as the instanceMap key
@@ -183,7 +195,7 @@ func (k *KeplerSource) memMetrics(ctx context.Context, query string) error {
 		id := labels["container_id"]
 		name := labels["container_name"]
 
-		k.logger.Debug("kepler source: memory energy consumption", "containerID", id, "container", name, "energy", m.Energy)
+		k.logger.Debug("kepler source: memory energy consumption kWh", "containerID", id, "container", name, "energy", m.Energy)
 
 		// if the instance already exists in the instancesMap
 		// upsert the metric and continue looping
