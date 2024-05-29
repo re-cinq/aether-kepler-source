@@ -79,8 +79,10 @@ func (k *KeplerSource) getMetrics(ctx context.Context, query string, rt v1.Resou
 		id := labels["container_id"]
 		name := labels["container_name"]
 
-		if sample.Value == 0 {
-			k.logger.Debug("kepler source: energy consumption is 0",
+		energy, err := convertJoulesTokWh(float64(sample.Value), k.cfg.Interval.Seconds())
+		if err != nil {
+			k.logger.Error("kepler source: error converting energy consumption",
+				"error", err,
 				"metric", rt,
 				"containerID", id,
 				"container", name,
@@ -92,7 +94,7 @@ func (k *KeplerSource) getMetrics(ctx context.Context, query string, rt v1.Resou
 		// collected from the query
 		m := v1.NewMetric(rt.String())
 		m.ResourceType = rt
-		m.Energy = convertJoulesTokWh(float64(sample.Value), k.cfg.Interval.Seconds())
+		m.Energy = energy
 		m.Labels = labels
 
 		k.logger.Debug("kepler source: energy consumption kWh",
@@ -167,8 +169,12 @@ func (k *KeplerSource) createInstance(labels map[string]string, id, name string)
 // from Joules to Kilowatt hours.
 // 1 Joule = 1 Watt second, so divide Joules by the interval of time in seconds
 // and divide by 3600 to get watt hours, and divide by 1000 to get kilowatt hours.
-func convertJoulesTokWh(j, s float64) float64 {
-	return j / s / 3600 / 1000
+func convertJoulesTokWh(j, s float64) (float64, error) {
+	if j == 0 {
+		return 0, fmt.Errorf("energy consumption is 0")
+	}
+
+	return j / s / 3600 / 1000, nil
 }
 
 // getRegionFromInstance takes a prometheus metrics label of
