@@ -1,9 +1,9 @@
 package kepler
 
 import (
-	"log/slog"
 	"v1/pkg/config"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/prometheus/client_golang/api"
 	prometheus "github.com/prometheus/client_golang/api/prometheus/v1"
 
@@ -11,7 +11,7 @@ import (
 )
 
 type KeplerSource struct {
-	logger *slog.Logger
+	logger hclog.Logger
 
 	cfg    *config.Config
 	client *api.Client
@@ -22,7 +22,7 @@ type KeplerSource struct {
 
 type option func(*KeplerSource)
 
-func WithLogger(l *slog.Logger) option {
+func WithLogger(l hclog.Logger) option {
 	return func(k *KeplerSource) {
 		k.logger = l
 	}
