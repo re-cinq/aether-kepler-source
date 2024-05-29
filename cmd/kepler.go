@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"log/slog"
 	"net/http"
 	"os"
 	"time"
 	"v1/pkg/config"
 	"v1/pkg/kepler"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-plugin"
 	"github.com/prometheus/client_golang/api"
 
@@ -18,7 +18,12 @@ import (
 func main() {
 
 	// in order to log from plugin you have to output to Stderr
-	logger := slog.New(slog.NewJSONHandler(os.Stderr, nil))
+	logger := hclog.New(&hclog.LoggerOptions{
+		Name:       "source.kepler",
+		Output:     os.Stderr,
+		Level:      hclog.Debug,
+		JSONFormat: true,
+	})
 
 	cfg := &config.Config{}
 
