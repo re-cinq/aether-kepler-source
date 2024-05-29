@@ -1,6 +1,21 @@
 # aether-kelper-source
 The plugin is designed as a source plugin for the aether project. It fetches data from the kepler API and sends it to the aether project via gRPC calls and the go-plugin framework.
 
+## Query and calculations
+Currently we query for the Kepler CPU and memory energy consumptions with the following queries:
+```
+sum without(mode) (rate(kepler_container_core_joules_total[5m])
+sum without(mode) (rate(kepler_container_dram_joules_total[5m])
+```
+
+The `5m` is configurable based on the `INTERVAL` environment variable, however we strongly recommend that the `INTERVAL` value in the plugin matches the `scrapingInterval` value in the `local.yaml` file in the `aether` project.
+
+The `sum without (mode)` portion of the query is to remove the `mode` label from the query by summing it's two parts (idle and dynamic) to get the absolute power value.
+To be more specific, from a [Kepler Blog][2]: "The dynamic power is directly related to the resource utilization and the idle power is the constant power that does not vary regardless if the system is at rest or with load."
+
+The result from the query is thus the absolute energy consumption in Joules over the `INTERVAL` period.
+The aether project expects the result to be in kilowatt hours, so we convert the result to kilowatt hours by dividing the result by the interval time in seconds, then by `3600000` (to convert from Joules/sec).
+
 ### Installation
 To install the plugin with aether in cluster environments follow the [installation guide][1].
 
@@ -56,3 +71,4 @@ docker compose up
 ```
 
 [1]: https://aether.green/docs/tutorials/kepler/
+[2]: https://www.cncf.io/blog/2023/10/11/exploring-keplers-potentials-unveiling-cloud-application-power-consumption/
