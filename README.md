@@ -13,7 +13,7 @@ The `5m` is configurable based on the `INTERVAL` environment variable, however w
 The `sum without (mode)` portion of the query is to remove the `mode` label from the query by summing it's two parts (idle and dynamic) to get the absolute power value.
 To be more specific, from a [Kepler Blog][2]: "The dynamic power is directly related to the resource utilization and the idle power is the constant power that does not vary regardless if the system is at rest or with load."
 
-The result from the query is thus the absolute energy consumption in Joules over the `INTERVAL` period.
+The result from the query is thus the absolute energy consumption in Joules summed over the `INTERVAL` period.
 The aether project expects the result to be in kilowatt hours, so we convert the result to kilowatt hours by dividing the result by the interval time in seconds, then by `3600000` (to convert from Joules/sec).
 
 ### Installation

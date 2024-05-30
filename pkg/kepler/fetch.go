@@ -13,7 +13,7 @@ import (
 	v1 "github.com/re-cinq/aether/pkg/types/v1"
 )
 
-const query = "sum without (mode) (rate(kepler_container_%s_joules_total[%s]))"
+const query = "sum without (mode) (sum_over_time(kepler_container_%s_joules_total[%s]))"
 
 // Stop is used to adhere to the interface and will be called when Aether is
 // shut down
