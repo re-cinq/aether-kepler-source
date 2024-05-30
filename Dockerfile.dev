@@ -1,4 +1,4 @@
-FROM recinq/aether:0.0.1-alpha.8 as aether
+FROM recinq/aether:0.0.1-alpha.12 as aether
 
 FROM golang:1.22
 

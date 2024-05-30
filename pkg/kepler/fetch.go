@@ -46,7 +46,7 @@ func (k *KeplerSource) Fetch(ctx context.Context) ([]*v1.Instance, error) {
 		instances = append(instances, i)
 	}
 
-	k.logger.Debug("kepler source: fetched instances", "instance Count", len(instances))
+	k.logger.Info("kepler source: fetched instances", "instance Count", len(instances))
 	return instances, nil
 }
 
